@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#090b10">
+  <meta name="description" content="Autitos GT: 30 de Septiembre. Campeonato de carreras 3D estilo PS2 con 8 autos, múltiples rutas y elevaciones.">
+  <title>AUTITOS GT // 30 DE SEPTIEMBRE - SPECIAL STAGE</title>
+
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+  <!-- Floating Audio Mute/Unmute Toggle -->
+  <button id="btn-sound-toggle" class="sound-toggle" title="Sonido">AUDIO [ ON ]</button>
+
+  <!-- ========================================================
+       SCREEN 1: INTRO & DELIVERY ANIMATION (PS2 ARCADE STYLE)
+  ======================================================== -->
+  <section id="screen-intro" class="screen">
+    <div class="intro-header">
+      <span class="intro-tag">SPECIAL RACING EVENT // 30.09</span>
+      <h1 class="intro-title">AUTITOS GRAND PRIX</h1>
+      <p class="intro-subtitle">El 21 tuvo flores amarillas... hoy se corre en la pista</p>
+    </div>
+
+    <!-- 2D Canvas with high-speed drifting cars -->
+    <div class="intro-canvas-container">
+      <canvas id="intro-canvas"></canvas>
+    </div>
+
+    <!-- Commemorative Unlocked Card -->
+    <div id="letter-card" class="letter-card hidden">
+      <div class="letter-badge">[ MEMORY CARD // SPECIAL EVENT ]</div>
+      <div class="letter-title">MENSAJE DESBLOQUEADO</div>
+      <p class="letter-text">
+        "es algo tarde pero feliz 30 de septiembre &gt;:3 disfruta del minijuego"
+      </p>
+      <button id="btn-play-race" class="btn-primary btn-pulse">
+        ENTRAR AL CAMPEONATO &gt;&gt;
+      </button>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SCREEN 2: GARAGE & 3D CAR SELECTION
+  ======================================================== -->
+  <section id="screen-garage" class="screen">
+    <div class="garage-header">
+      <div class="garage-tag">SELECT VEHICLE // ROSTER 2026</div>
+      <h2 class="garage-title">GARAGE DE COMPETICIÓN</h2>
+      <p class="garage-subtitle">8 pilotos en parrilla | 3 categorías de chasis | Elige tu máquina</p>
+    </div>
+
+    <!-- 3D Turntable Preview Canvas -->
+    <div class="garage-turntable-container">
+      <canvas id="garage-canvas"></canvas>
+      <div class="turntable-hint">[ ARRASTRAR PARA ROTAR 360° ]</div>
+    </div>
+
+    <!-- Selected Car Specs & Category Guide -->
+    <div class="garage-car-details">
+      <div class="garage-car-header">
+        <div>
+          <h3 id="garage-car-name" class="garage-car-name">LION 3008</h3>
+          <span id="garage-car-real" class="garage-car-real">SPEC: Inspirado en Peugeot 3008 Crossover</span>
+        </div>
+        <span id="garage-car-badge" class="type-badge large suv">SUV</span>
+      </div>
+      <p id="garage-car-desc" class="garage-car-desc">
+        Baja velocidad punta, máxima maniobrabilidad y estabilidad en curvas cerradas.
+      </p>
+
+      <!-- Stats Progress Bars -->
+      <div class="stats-grid">
+        <div class="stat-row">
+          <span class="stat-label">TOP SPEED</span>
+          <div class="stat-bar-bg">
+            <div id="stat-speed" class="stat-bar-fill speed" style="width: 43%;"></div>
+          </div>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">HANDLING</span>
+          <div class="stat-bar-bg">
+            <div id="stat-handling" class="stat-bar-fill handling" style="width: 95%;"></div>
+          </div>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">ACCEL</span>
+          <div class="stat-bar-bg">
+            <div id="stat-accel" class="stat-bar-fill accel" style="width: 64%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Car Selector Cards Carousel -->
+    <div id="car-cards-list" class="car-cards-list"></div>
+
+    <div class="garage-footer">
+      <button id="btn-start-race" class="btn-primary btn-pulse">
+        CONFIRMAR Y CORRER &gt;&gt;
+      </button>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SCREEN 3: 3D RACING GAME SCREEN (PS2 TELEMETRY HUD)
+  ======================================================== -->
+  <section id="screen-race" class="screen">
+    <!-- WebGL Three.js Canvas -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- Top HUD Telemetry -->
+    <div class="hud-top">
+      <div class="hud-left">
+        <div class="hud-gauge-cluster">
+          <div class="hud-badge pos-badge">
+            <span class="hud-sub">POS</span>
+            <span id="hud-pos" class="hud-pos">1ST / 8</span>
+          </div>
+          <div class="hud-badge lap-badge">
+            <span class="hud-sub">LAP</span>
+            <span id="hud-lap" class="hud-lap">1 / 2</span>
+          </div>
+        </div>
+        <div class="hud-track-info">
+          <span id="hud-phase" class="hud-phase-name">FASE 1: CIUDAD & VIADUCTO HOSPITAL HRT</span>
+        </div>
+        <div id="hud-dirt-badge" class="hud-dirt-badge" style="display: none;">
+          [ DIRT SECTOR // LOW TRACTION ]
+        </div>
+      </div>
+
+      <div class="hud-right">
+        <div class="hud-telemetry-box">
+          <div class="hud-speedometer">
+            <span id="hud-speed">0</span>
+            <span class="speed-unit">KM/H</span>
+          </div>
+          <div class="hud-gear-box">
+            <span class="gear-sub">GEAR</span>
+            <span id="hud-gear" class="gear-val">1</span>
+          </div>
+        </div>
+        <button id="btn-reset" class="btn-icon" title="Reset Car">RESET</button>
+        <div class="hud-minimap-box">
+          <canvas id="minimap-canvas" width="94" height="94"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Countdown Display (3, 2, 1, GO!) -->
+    <div id="countdown-overlay" class="countdown-overlay">
+      <span id="countdown-text" class="countdown-anim">3</span>
+    </div>
+
+    <!-- Mobile Touch Controls (PS2 Arcade Controller Style) -->
+    <div class="mobile-controls">
+      <!-- Left Hand: Steering -->
+      <div class="control-group steer-group">
+        <div id="btn-left" class="touch-btn btn-steer">
+          <span>&lt;</span>
+          <small>STEER L</small>
+        </div>
+        <div id="btn-right" class="touch-btn btn-steer">
+          <span>&gt;</span>
+          <small>STEER R</small>
+        </div>
+      </div>
+
+      <!-- Right Hand: Gas & Brake -->
+      <div class="control-group pedal-group">
+        <div id="btn-brake" class="touch-btn btn-brake">
+          <span>STOP</span>
+          <small>BRAKE</small>
+        </div>
+        <div id="btn-gas" class="touch-btn btn-gas">
+          <span>GO</span>
+          <small>THROTTLE</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Modal (After 2 Laps) -->
+    <div id="results-modal" class="modal-backdrop">
+      <div class="modal-content">
+        <div class="modal-tag">ETAPA FINALIZADA // CLASIFICACIÓN FINAL</div>
+        <h3 id="results-title" class="modal-title">RESULTADOS DE CARRERA</h3>
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>POS</th>
+              <th>VEHÍCULO</th>
+              <th>TIPO</th>
+            </tr>
+          </thead>
+          <tbody id="results-tbody"></tbody>
+        </table>
+        <div class="modal-actions">
+          <button id="btn-retry-phase" class="btn-secondary">REINTENTAR ETAPA</button>
+          <button id="btn-next-phase" class="btn-modal-primary">SIGUIENTE ETAPA &gt;&gt;</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SCREEN 4: GRAND FINALE PODIUM
+  ======================================================== -->
+  <section id="screen-finale" class="screen">
+    <canvas id="confetti-canvas"></canvas>
+    <div class="finale-card">
+      <div class="finale-trophy-tag">GRAND PRIX CHAMPION</div>
+      <h2 class="finale-title">CAMPEÓN ABSOLUTO</h2>
+      <p class="finale-msg">
+        Completaste las 3 etapas del campeonato al volante de tu <strong id="finale-car-name"></strong>.
+      </p>
+      <div class="finale-note">
+        "es algo tarde pero feliz 30 de septiembre &gt;:3 disfruta del minijuego"
+        <br><br>
+        30 DE SEPTIEMBRE // AUTITOS GRAND PRIX
+      </div>
+      <button id="btn-replay-all" class="btn-primary">
+        REINICIAR CAMPEONATO
+      </button>
+    </div>
+  </section>
+
+  <!-- Game Scripts in Execution Order -->
+  <script src="js/audio.js"></script>
+  <script src="js/models.js"></script>
+  <script src="js/tracks.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/intro.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
